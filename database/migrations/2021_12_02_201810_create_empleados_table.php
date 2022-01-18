@@ -20,7 +20,9 @@ class CreateEmpleadosTable extends Migration
             $table->string('ApellidoMaterno');
             $table->string('Correo');
             $table->string('Foto');
+            $table->unsignedBigInteger('user_id');
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade')->nullable();
         });
     }
 

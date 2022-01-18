@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Empleado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\EmpleadoPostRequest;
+use Illuminate\Auth\Middleware\Authorize;
 
 class EmpleadoController extends Controller
 {
@@ -13,10 +16,12 @@ class EmpleadoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Empleado $empleado)
     {
+        
 
-        $datos['empleados'] = Empleado::paginate(5);
+        $datos['empleados'] = $empleado->paginate(5);
+
         return view('empleado.index', $datos);
     }
 
@@ -36,27 +41,17 @@ class EmpleadoController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(EmpleadoPostRequest $request)
     {
         //$request = request()->all();\
 
-        $campos = [
-            'Nombre' => 'required|string|max:100',
-            'ApellidoPaterno' => 'required|string|max:100',
-            'ApellidoMaterno' => 'required|string|max:100',
-            'Correo' => 'required|email',
-            'Foto' => 'required|max:1000|mimes:jpeg,png,jpg'
-        ];
 
-        $message = [
-            'required' => 'El :attribute es requerido',
-            'Foto.required' => 'la foto requerida'
 
-        ];
-
-        $this->validate($request, $campos, $message);
+        $request->validated();
 
         $post = request()->except('_token');
+        //all de esta forma podemos agregar la llave forania al reuezt sin que chille esta chingadera     ljs  
+        $post['user_id'] = Auth::user()->id;
 
         if ($request->hasFile('Foto')) {
 
@@ -90,6 +85,8 @@ class EmpleadoController extends Controller
     public function edit($id)
     {
         $empleado = Empleado::findOrFail($id);
+
+        $this->authorize('update', $empleado);
 
         return view('empleado.edit', compact('empleado'));
     }
@@ -135,10 +132,13 @@ class EmpleadoController extends Controller
 
         $empleado = Empleado::findOrFail($id);
 
+        $this->authorize('update', $empleado);
 
-       // return view('empleado.edit', compact('empleado'));
 
-       return redirect('empleado')->with('menssage' , 'the employ was edit');
+
+        // return view('empleado.edit', compact('empleado'));
+
+        return redirect('empleado')->with('menssage', 'the employ was edit');
     }
 
     /**
@@ -149,9 +149,9 @@ class EmpleadoController extends Controller
      */
     public function destroy($id)
     {
-
-
         $empleado = Empleado::findOrFail($id);
+        $this->authorize('update', $empleado);
+
 
         if (Storage::delete('public/' . $empleado->Foto)) {
             Empleado::destroy($id);

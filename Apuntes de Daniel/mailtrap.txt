@@ -1,0 +1,27 @@
+1. creamos nuestro mailable que es la clase con la que enciaremos corresos, la creamos con:
+    php artisan make:mail ExampleMailable 
+2 configuramos nuestro .env para poder utilizar nuestro SMTP en mi caso uso mailtrap
+    MAIL_DRIVER=smtp
+    MAIL_HOST= smtp.mailtrap.io
+    MAIL_PORT=587
+    MAIL_USERNAME=370929d29c19fe
+    MAIL_PASSWORD=f202836759450c
+    MAIL_ENCRYPTION=tls
+
+    MAIL_FROM_ADDRESS=daniel@gamehour.app
+    MAIL_FROM_NAME="Daniel"
+3 usamos nuestro mailable ya creado para enviar el mensage al correo desde una vista 
+    public function build(){
+        return $this->from('daniel@gamehour.app', 'Daniel')->view('emails.contactus');
+    }
+4 escribimos que vamos a mandar en la vista
+
+5 usamos una ruta para mandar el mensage al correo ulilizando las clases mail y el mailable
+    Route::get('/contact-us', function(){
+    $correo = new ContactUsMailable;
+
+    Mail::to('contact@odynn.dev')->send($correo);
+
+    return 'mensage enviado';
+    });
+y yas ta :) 
